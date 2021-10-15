@@ -95,7 +95,8 @@ def choose_word(file_path, index):
     words = file_path.read()
     words_list = words.split(" ")
     n = (index - 1) % len(words_list)
-    print(len(words_list))
+    if n == len(words_list) - 1:
+        words_list[n] = words_list[n][:-1]
     return words_list[n]
 
 

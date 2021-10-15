@@ -136,6 +136,8 @@ def show_hidden_word(secret_word, old_letters_guessed):
     for letter in secret_word:
         if letter in old_letters_guessed:
             word_shown = word_shown + letter + ' '
+        elif letter == '_':
+            word_shown = word_shown + '- '
         else :
             word_shown = word_shown + "_ "
     return word_shown[:-1]
@@ -144,7 +146,7 @@ def show_hidden_word(secret_word, old_letters_guessed):
 # return True iff the player has won
 def check_win(secret_word, old_letters_guessed):
     for letter in secret_word :
-        if letter not in old_letters_guessed:
+        if letter not in old_letters_guessed and letter != '_':
             return False
     return True
 

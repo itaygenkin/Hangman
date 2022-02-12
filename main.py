@@ -1,6 +1,7 @@
 import string
 import sys
 import time
+from colorama import Fore, Style
 
 HANGMAN_ASCII_ART = """  _    _
  | |  | |
@@ -56,7 +57,7 @@ old_letters_guessed = []
 
 # printing the begging screen of the game
 def welcome():
-    print(HANGMAN_ASCII_ART)
+    print(Fore.CYAN + HANGMAN_ASCII_ART + Style.RESET_ALL)
     time.sleep(1.3)
     print("Welcome to the game Hangman")
     time.sleep(1.8)
@@ -203,7 +204,7 @@ HANGMAN_PHOTOS = {0: "  x-------x",
 
 
 def print_hangman(num_of_tries):
-    print(HANGMAN_PHOTOS[num_of_tries])
+    print(Fore.RED + HANGMAN_PHOTOS[num_of_tries] + Style.RESET_ALL)
 
 
 if __name__ == '__main__':

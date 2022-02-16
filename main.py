@@ -1,6 +1,8 @@
 import string
 import sys
 import time
+from random import random
+
 from colorama import Fore, Style
 
 HANGMAN_ASCII_ART = """  _    _
@@ -55,7 +57,7 @@ hangman_pictures = [picture_0, picture_1, picture_2, picture_3, picture_4, pictu
 old_letters_guessed = []
 
 
-# printing the begging screen of the game
+# printing the opening screen of the game
 def welcome():
     print(Fore.CYAN + HANGMAN_ASCII_ART + Style.RESET_ALL)
     time.sleep(1.3)
@@ -68,13 +70,26 @@ def welcome():
 
 def main():
     words_file = open(sys.argv[1], 'r')
-    word_index = int(input("Please enter a number "))
-    secret_word = choose_word(words_file, word_index)
+    # word_index = int(input("Please enter a number "))
+    secret_word = choose_word(words_file)
+    game_level = int(input("Choose time lapse for each round or zero for ultimate time "))
 
-    num_of_tries = 0
+    global MAX_TRIES
     MAX_TRIES = 6
-    print_hangman(num_of_tries)
+    print_hangman(0)
 
+    if game_level == 0:
+        running_ultimate_game(secret_word)
+    elif game_level > 0:
+        running_game(secret_word, game_level)
+    else:
+        print("Invalid time chosen")
+        main()
+    words_file.close()
+
+
+def running_ultimate_game(secret_word):
+    num_of_tries = 0
     while num_of_tries < MAX_TRIES:
         print(show_hidden_word(secret_word, old_letters_guessed))
         letter_guessed = input("Please guess a letter: ").lower()
@@ -96,17 +111,43 @@ def main():
             print("Invalid letter, please try again")
         if num_of_tries == MAX_TRIES:
             print("Loser!!")
-        words_file.close()
+
+
+def running_game(secret_word, round_time):
+    num_of_tries = 0
+    while num_of_tries < MAX_TRIES:
+        print(show_hidden_word(secret_word, old_letters_guessed))
+        letter_guessed = input("Please guess a letter: ").lower()
+
+        if try_update_letter_guessed(letter_guessed, old_letters_guessed):
+            if letter_guessed not in secret_word:
+                print("Wrong guess :(")
+                time.sleep(0.5)
+                num_of_tries += 1
+                print_hangman(num_of_tries)
+                time.sleep(0.6)
+                print("Please try again")
+            elif check_win(secret_word, old_letters_guessed):
+                print(show_hidden_word(secret_word, old_letters_guessed))
+                print("Congratulations!")
+                break
+        else:
+            time.sleep(0.3)
+            print("Invalid letter, please try again")
+        if num_of_tries == MAX_TRIES:
+            print("Loser!!")
 
 
 # return a word from the words file according to the number the user chose
-def choose_word(file_path, index):
+def choose_word(file_path):
     words = file_path.read()
     words_list = words.split(" ")
-    n = (index - 1) % len(words_list)
-    if n == len(words_list) - 1:
-        words_list[n] = words_list[n][:-1]
-    return words_list[n]
+    k = random()
+    k = int(k * (len(words_list) + 1))
+    # n = (index - 1) % len(words_list)
+    if k == len(words_list) - 1:
+        words_list[k] = words_list[k][:-1]
+    return words_list[k]
 
 
 # return True iff the letter is a letter from the 'abc' (no matter if the letter is upper or lower)

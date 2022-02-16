@@ -5,6 +5,8 @@ from random import random
 from colorama import Fore, Style
 
 import Repository
+import DTO
+from DAO import Players
 
 HANGMAN_ASCII_ART = """  _    _
  | |  | |
@@ -58,7 +60,7 @@ hangman_pictures = [picture_0, picture_1, picture_2, picture_3, picture_4, pictu
 old_letters_guessed = []
 
 connection = Repository.Repository(sys.argv[2])
-
+Hall_of_Fame = Players(connection)
 
 # printing the opening screen of the game
 def welcome():
@@ -152,7 +154,11 @@ def running_score_game(secret_word):
 
 def add_to_db(score):
     name = input("Enter your name ")
-    Repository.Repository.insert(name, score)
+    named_tuple = time.localtime()
+    time_string = time.strftime("%m/%d/%Y", named_tuple)
+    player = DTO.Player(name, score, time_string)
+    Hall_of_Fame.insert(player)
+    connection.close_db()
 
 
 # return a word from the words file according to the number the user chose

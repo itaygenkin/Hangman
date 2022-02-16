@@ -9,17 +9,11 @@ class Repository:
     def create_table(self):
         cur = self._connection.cursor()
         cur.execute("""
-        CREATE TABLE IF NOT EXISTS hall_of_fame
+        CREATE TABLE IF NOT EXISTS Hall_of_Fame(
             name    STRING      NOT NULL,
-            score   INTEGER   NOT NULL,
-            date    DATE      NOT NULL
+            score   INTEGER     NOT NULL,
+            date    STRING      NOT NULL
         )""")
-
-    def insert(self, name, score):
-        cur = self._connection.cursor()
-        cur.execute("""
-            INSERT INTO hall_of_fame (name, score, date) VALUES(?, ?, ?)
-            """, [name, score, time.localtime()])
 
     def close_db(self):
         self._connection.commit()

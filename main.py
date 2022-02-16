@@ -2,6 +2,7 @@ import string
 import sys
 import time
 from random import random
+import threading as th
 
 from colorama import Fore, Style
 
@@ -65,31 +66,31 @@ def welcome():
     time.sleep(1.8)
     print("You have 6 tries")
     time.sleep(1.7)
-    enter = input("Please press enter to begin the game!")
+    enter = input("Please press enter to begin the game ")
 
 
 def main():
     words_file = open(sys.argv[1], 'r')
     # word_index = int(input("Please enter a number "))
     secret_word = choose_word(words_file)
-    game_level = int(input("Choose time lapse for each round or zero for ultimate time "))
+    game_level = input("Choose 1 for the ultimate game or 2 for the score game ")
 
     global MAX_TRIES
     MAX_TRIES = 6
-    print_hangman(0)
 
-    if game_level == 0:
+    if game_level == '1':
         running_ultimate_game(secret_word)
-    elif game_level > 0:
-        running_game(secret_word, game_level)
+    elif game_level == '2':
+        running_score_game(secret_word, game_level)
     else:
-        print("Invalid time chosen")
+        print("Invalid level chosen")
         main()
     words_file.close()
 
 
 def running_ultimate_game(secret_word):
     num_of_tries = 0
+    print_hangman(0)
     while num_of_tries < MAX_TRIES:
         print(show_hidden_word(secret_word, old_letters_guessed))
         letter_guessed = input("Please guess a letter: ").lower()
@@ -113,11 +114,13 @@ def running_ultimate_game(secret_word):
             print("Loser!!")
 
 
-def running_game(secret_word, round_time):
+def running_score_game(secret_word, round_time):
     num_of_tries = 0
+    print_hangman(0)
+    start = time.time()
     while num_of_tries < MAX_TRIES:
         print(show_hidden_word(secret_word, old_letters_guessed))
-        letter_guessed = input("Please guess a letter: ").lower()
+        letter_guessed = input("Please guess a letter: ").lower()  # the user must choose a letter
 
         if try_update_letter_guessed(letter_guessed, old_letters_guessed):
             if letter_guessed not in secret_word:
@@ -125,11 +128,15 @@ def running_game(secret_word, round_time):
                 time.sleep(0.5)
                 num_of_tries += 1
                 print_hangman(num_of_tries)
-                time.sleep(0.6)
+                time.sleep(0.5)
+                start += 1
                 print("Please try again")
             elif check_win(secret_word, old_letters_guessed):
+                timer = time.time() - start
+                SCORE = int((len(secret_word) * 500 * (1 / timer)))
                 print(show_hidden_word(secret_word, old_letters_guessed))
                 print("Congratulations!")
+                print("You've got {} points!".format(SCORE))
                 break
         else:
             time.sleep(0.3)
@@ -144,7 +151,6 @@ def choose_word(file_path):
     words_list = words.split(" ")
     k = random()
     k = int(k * (len(words_list) + 1))
-    # n = (index - 1) % len(words_list)
     if k == len(words_list) - 1:
         words_list[k] = words_list[k][:-1]
     return words_list[k]
@@ -166,7 +172,7 @@ def check_valid_input(letter_guessed, old_letters_guessed):
     return True
 
 
-# update the letters the user guessed and return true iff the letter guessed is valid and it is not guessed yet
+# update the letters the user guessed and return true iff the letter guessed is valid, and it is not guessed yet
 def try_update_letter_guessed(letter_guessed, old_letters_guessed):
     if is_valid_letter(letter_guessed) and not letter_guessed in old_letters_guessed:
         old_letters_guessed.append(letter_guessed)

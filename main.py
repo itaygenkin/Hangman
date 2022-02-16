@@ -2,9 +2,9 @@ import string
 import sys
 import time
 from random import random
-import threading as th
-
 from colorama import Fore, Style
+
+import Repository
 
 HANGMAN_ASCII_ART = """  _    _
  | |  | |
@@ -57,31 +57,35 @@ picture_6 = """    x-------x
 hangman_pictures = [picture_0, picture_1, picture_2, picture_3, picture_4, picture_5, picture_6]
 old_letters_guessed = []
 
+connection = Repository.Repository(sys.argv[2])
+
 
 # printing the opening screen of the game
 def welcome():
     print(Fore.CYAN + HANGMAN_ASCII_ART + Style.RESET_ALL)
-    time.sleep(1.3)
+    time.sleep(1.5)
     print("Welcome to the game Hangman")
-    time.sleep(1.8)
+    time.sleep(1.5)
     print("You have 6 tries")
-    time.sleep(1.7)
+    time.sleep(1.5)
     enter = input("Please press enter to begin the game ")
 
 
 def main():
     words_file = open(sys.argv[1], 'r')
-    # word_index = int(input("Please enter a number "))
+    # connection = Repository.Repository(sys.argv[2])
+    connection.create_table()
+
     secret_word = choose_word(words_file)
-    game_level = input("Choose 1 for the ultimate game or 2 for the score game ")
+    game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
 
     global MAX_TRIES
     MAX_TRIES = 6
 
-    if game_level == '1':
+    if game_mode == '1':
         running_ultimate_game(secret_word)
-    elif game_level == '2':
-        running_score_game(secret_word, game_level)
+    elif game_mode == '2':
+        running_score_game(secret_word)
     else:
         print("Invalid level chosen")
         main()
@@ -101,20 +105,20 @@ def running_ultimate_game(secret_word):
                 time.sleep(0.5)
                 num_of_tries += 1
                 print_hangman(num_of_tries)
-                time.sleep(0.6)
+                time.sleep(0.5)
                 print("Please try again")
             elif check_win(secret_word, old_letters_guessed):
                 print(show_hidden_word(secret_word, old_letters_guessed))
                 print("Congratulations!")
                 break
         else:
-            time.sleep(0.3)
+            time.sleep(0.5)
             print("Invalid letter, please try again")
         if num_of_tries == MAX_TRIES:
             print("Loser!!")
 
 
-def running_score_game(secret_word, round_time):
+def running_score_game(secret_word):
     num_of_tries = 0
     print_hangman(0)
     start = time.time()
@@ -137,12 +141,18 @@ def running_score_game(secret_word, round_time):
                 print(show_hidden_word(secret_word, old_letters_guessed))
                 print("Congratulations!")
                 print("You've got {} points!".format(SCORE))
+                add_to_db(SCORE)
                 break
         else:
             time.sleep(0.3)
             print("Invalid letter, please try again")
         if num_of_tries == MAX_TRIES:
             print("Loser!!")
+
+
+def add_to_db(score):
+    name = input("Enter your name ")
+    Repository.Repository.insert(name, score)
 
 
 # return a word from the words file according to the number the user chose

@@ -83,14 +83,13 @@ def main():
 
     global MAX_TRIES
     MAX_TRIES = 6
-
+    while game_mode != '1' and game_mode != '2':
+        print("Invalid level chosen")
+        game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
     if game_mode == '1':
         running_ultimate_game(secret_word)
-    elif game_mode == '2':
-        running_score_game(secret_word)
     else:
-        print("Invalid level chosen")
-        main()
+        running_score_game(secret_word)
     words_file.close()
 
 

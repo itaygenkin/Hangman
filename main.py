@@ -16,48 +16,6 @@ HANGMAN_ASCII_ART = """  _    _
  |_|  |_|\__,_|_| |_|\__, |_| |_| |_|\__,_|_| |_|
                       __/ |
                      |___/"""
-picture_0 = "  x-------x"
-picture_1 = """    x-------x
-    |
-    |
-    |
-    |
-    |"""
-picture_2 = """"    x-------x
-    |       |
-    |       0
-    |
-    |
-    |
-"""
-picture_3 = """    x-------x
-    |       |
-    |       0
-    |       |
-    |
-    |
-"""
-picture_4 = """    x-------x
-    |       |
-    |       0
-    |      /|\\
-    |
-    |
-"""
-picture_5 = """    x-------x
-    |       |
-    |       0
-    |      /|\\
-    |      /
-    |"""
-picture_6 = """    x-------x
-    |       |
-    |       0
-    |      /|\\
-    |      / \\
-    |"""
-hangman_pictures = [picture_0, picture_1, picture_2, picture_3, picture_4, picture_5, picture_6]
-old_letters_guessed = []
 
 connection = Repository.Repository(sys.argv[2])
 Hall_of_Fame = Players(connection)
@@ -80,7 +38,8 @@ def main():
 
     secret_word = choose_word(words_file)
     game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
-
+    global old_letters_guessed
+    old_letters_guessed = []
     global MAX_TRIES
     MAX_TRIES = 6
     while game_mode != '1' and game_mode != '2':

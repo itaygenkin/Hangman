@@ -27,41 +27,51 @@ def welcome():
     time.sleep(1.5)
     print("Welcome to the game Hangman")
     time.sleep(1.7)
-
-
     enter = input("Please press enter to begin the game ")
 
 
 def main():
     words_file = open(sys.argv[1], 'r')
+    words = words_file.read()
+    words_list = words.split(" ")
     # connection = Repository.Repository(sys.argv[2])
     connection.create_table()
 
-    secret_word = choose_word(words_file)
+    global old_letter_guessed
     game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
-    global old_letters_guessed
-    old_letters_guessed = []
 
     while game_mode != '1' and game_mode != '2':
         print("Invalid level chosen")
         game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
-    if game_mode == '1':
-        running_ultimate_game(secret_word)
-    else:
-        running_score_game(secret_word)
+    print("You have 6 tries")
+    time.sleep(0.5)
+    while game_mode == '1':
+        secret_word = choose_word(words_list)
+        game_mode = running_ultimate_game(secret_word)
+    while game_mode == '2':
+        secret_word = choose_word(words_list)
+        game_mode = running_score_game(secret_word)
+
+    connection.close_db()
     words_file.close()
 
 
 def running_ultimate_game(secret_word):
-    print("You have 6 tries")
-    time.sleep(1)
+    """
+    run a game with no score
+    :param secret_word: represent the word that the user should guess
+    :type secret_word: str
+    :return: game mode
+    :rtype: str
+    """
+    old_letter_guessed = []
     num_of_tries = 0
     print_hangman(0)
     while num_of_tries < 6:
-        print(show_hidden_word(secret_word, old_letters_guessed))
+        print(show_hidden_word(secret_word, old_letter_guessed))
         letter_guessed = input("Please guess a letter: ").lower()
 
-        if try_update_letter_guessed(letter_guessed, old_letters_guessed):
+        if try_update_letter_guessed(letter_guessed, old_letter_guessed):
             if letter_guessed not in secret_word:
                 print("Wrong guess :(")
                 time.sleep(0.5)
@@ -69,8 +79,8 @@ def running_ultimate_game(secret_word):
                 print_hangman(num_of_tries)
                 time.sleep(0.5)
                 print("Please try again")
-            elif check_win(secret_word, old_letters_guessed):
-                print(show_hidden_word(secret_word, old_letters_guessed))
+            elif check_win(secret_word, old_letter_guessed):
+                print(show_hidden_word(secret_word, old_letter_guessed))
                 print("Congratulations!")
                 break
         else:
@@ -78,20 +88,27 @@ def running_ultimate_game(secret_word):
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
+    return input("Choose 1 for new game or 0 to end the game ")
 
 
 def running_score_game(secret_word):
+    """
+    run a game with score
+    :param secret_word: represent the word that the user should guess
+    :type secret_word: str
+    :return: game mode
+    :rtype: str
+    """
     time.sleep(0.3)
-    print("You have 6 tries")
-    time.sleep(1.5)
+    old_letter_guessed = []
     num_of_tries = 0
     print_hangman(0)
     start = time.time()
     while num_of_tries < 6:
-        print(show_hidden_word(secret_word, old_letters_guessed))
+        print(show_hidden_word(secret_word, old_letter_guessed))
         letter_guessed = input("Please guess a letter: ").lower()  # the user must choose a letter
 
-        if try_update_letter_guessed(letter_guessed, old_letters_guessed):
+        if try_update_letter_guessed(letter_guessed, old_letter_guessed):
             if letter_guessed not in secret_word:
                 print("Wrong guess :(")
                 time.sleep(0.5)
@@ -100,10 +117,10 @@ def running_score_game(secret_word):
                 time.sleep(0.5)
                 start += 1
                 print("Please try again")
-            elif check_win(secret_word, old_letters_guessed):
+            elif check_win(secret_word, old_letter_guessed):
                 timer = time.time() - start
                 score = compute_score(timer, secret_word)
-                print(show_hidden_word(secret_word, old_letters_guessed))
+                print(show_hidden_word(secret_word, old_letter_guessed))
                 print("Congratulations!")
                 print("You've got {} points!".format(score))
                 add_to_db(score)
@@ -113,6 +130,7 @@ def running_score_game(secret_word):
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
+    return input("Choose 2 for new game or 0 to end the game ")
 
 
 def add_to_db(score):
@@ -121,19 +139,16 @@ def add_to_db(score):
     time_string = time.strftime("%m/%d/%Y", named_tuple)
     player = DTO.Player(name, score, time_string)
     Hall_of_Fame.insert(player)
-    connection.close_db()
 
 
-def choose_word(file_path):
+def choose_word(words_list):
     """
     return a random word from a bank of words
-    :param file_path: file with bank of words
-    :type file_path: file
+    :param words_list: list of words
+    :type words_list: list
     :return: a random word
     :rtype: str
     """
-    words = file_path.read()
-    words_list = words.split(" ")
     k = random()
     k = int(k * (len(words_list) + 1))
     if k == len(words_list) - 1:
@@ -151,8 +166,8 @@ def is_valid_letter(letter):
 
 
 # return True iff the input of the player is valid
-def check_valid_input(letter_guessed, old_letters_guessed):
-    if not is_valid_letter(letter_guessed) or letter_guessed in old_letters_guessed:
+def check_valid_input(letter_guessed, old_letter_guessed):
+    if not is_valid_letter(letter_guessed) or letter_guessed in old_letter_guessed:
         return False
     return True
 
@@ -256,7 +271,7 @@ def compute_score(timer, word):
     for letter in word:
         if letter != '_':
             freq_value += letter_freq_value[letter]
-    score = int((100 / timer) * freq_value)
+    score = int((200 / timer) * freq_value)
     return score
 
 

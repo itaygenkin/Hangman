@@ -20,14 +20,15 @@ HANGMAN_ASCII_ART = """  _    _
 connection = Repository.Repository(sys.argv[2])
 Hall_of_Fame = Players(connection)
 
+
 # printing the opening screen of the game
 def welcome():
     print(Fore.CYAN + HANGMAN_ASCII_ART + Style.RESET_ALL)
     time.sleep(1.5)
     print("Welcome to the game Hangman")
-    time.sleep(1.5)
-    print("You have 6 tries")
-    time.sleep(1.5)
+    time.sleep(1.7)
+
+
     enter = input("Please press enter to begin the game ")
 
 
@@ -40,8 +41,7 @@ def main():
     game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
     global old_letters_guessed
     old_letters_guessed = []
-    global MAX_TRIES
-    MAX_TRIES = 6
+
     while game_mode != '1' and game_mode != '2':
         print("Invalid level chosen")
         game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
@@ -53,9 +53,11 @@ def main():
 
 
 def running_ultimate_game(secret_word):
+    print("You have 6 tries")
+    time.sleep(1)
     num_of_tries = 0
     print_hangman(0)
-    while num_of_tries < MAX_TRIES:
+    while num_of_tries < 6:
         print(show_hidden_word(secret_word, old_letters_guessed))
         letter_guessed = input("Please guess a letter: ").lower()
 
@@ -74,15 +76,18 @@ def running_ultimate_game(secret_word):
         else:
             time.sleep(0.5)
             print("Invalid letter, please try again")
-        if num_of_tries == MAX_TRIES:
+        if num_of_tries == 6:
             print("Loser!!")
 
 
 def running_score_game(secret_word):
+    time.sleep(0.3)
+    print("You have 6 tries")
+    time.sleep(1.5)
     num_of_tries = 0
     print_hangman(0)
     start = time.time()
-    while num_of_tries < MAX_TRIES:
+    while num_of_tries < 6:
         print(show_hidden_word(secret_word, old_letters_guessed))
         letter_guessed = input("Please guess a letter: ").lower()  # the user must choose a letter
 
@@ -97,16 +102,16 @@ def running_score_game(secret_word):
                 print("Please try again")
             elif check_win(secret_word, old_letters_guessed):
                 timer = time.time() - start
-                SCORE = int((len(secret_word) * 500 * (1 / timer)))
+                score = compute_score(timer, secret_word)
                 print(show_hidden_word(secret_word, old_letters_guessed))
                 print("Congratulations!")
-                print("You've got {} points!".format(SCORE))
-                add_to_db(SCORE)
+                print("You've got {} points!".format(score))
+                add_to_db(score)
                 break
         else:
             time.sleep(0.3)
             print("Invalid letter, please try again")
-        if num_of_tries == MAX_TRIES:
+        if num_of_tries == 6:
             print("Loser!!")
 
 
@@ -119,8 +124,14 @@ def add_to_db(score):
     connection.close_db()
 
 
-# return a word from the words file according to the number the user chose
 def choose_word(file_path):
+    """
+    return a random word from a bank of words
+    :param file_path: file with bank of words
+    :type file_path: file
+    :return: a random word
+    :rtype: str
+    """
     words = file_path.read()
     words_list = words.split(" ")
     k = random()
@@ -181,7 +192,7 @@ def check_win(secret_word, old_letters_guessed):
     return True
 
 
-# the names of the following keys were changed to just numbers so as to simplify the next function
+# the names of the following keys were changed to numbers so as to simplify the next function
 HANGMAN_PHOTOS = {0: "  x-------x",
                   1: """    x-------x
     |
@@ -226,6 +237,27 @@ HANGMAN_PHOTOS = {0: "  x-------x",
 
 def print_hangman(num_of_tries):
     print(Fore.RED + HANGMAN_PHOTOS[num_of_tries] + Style.RESET_ALL)
+
+
+def compute_score(timer, word):
+    """
+    calculate the score of the game
+    :param timer: represent the elapsed time
+    :param word: represent the word that should have been guessed
+    :type timer: float
+    :type word: str
+    :return: score value
+    :rtype: int
+    """
+    letter_freq_value = {'a': 1, 'b': 9, 'c': 5, 'd': 6, 'e': 1, 'f': 9, 'g':  8, 'h': 7, 'i': 2, 'j': 17, 'k': 13,
+                         'l': 4, 'm': 6, 'n': 3, 'o': 3, 'p': 6, 'q': 18, 'r': 2, 's': 4, 't': 3, 'u': 6, 'v': 13,
+                         'w': 12, 'x': 15, 'y': 10, 'z': 15}
+    freq_value = 0
+    for letter in word:
+        if letter != '_':
+            freq_value += letter_freq_value[letter]
+    score = int((100 / timer) * freq_value)
+    return score
 
 
 if __name__ == '__main__':

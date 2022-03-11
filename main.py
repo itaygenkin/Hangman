@@ -174,7 +174,7 @@ def check_valid_input(letter_guessed, old_letter_guessed):
 
 # update the letters the user guessed and return true iff the letter guessed is valid, and it is not guessed yet
 def try_update_letter_guessed(letter_guessed, old_letters_guessed):
-    if is_valid_letter(letter_guessed) and not letter_guessed in old_letters_guessed:
+    if is_valid_letter(letter_guessed) and letter_guessed not in old_letters_guessed:
         old_letters_guessed.append(letter_guessed)
         return True
     else:

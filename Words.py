@@ -19,7 +19,12 @@ def choose_word(words_list):
     return words_list[k]
 
 
-# return True iff the letter is a letter from the 'abc' (no matter if the letter is upper or lower)
+def is_valid_game_mode(mode):
+    if mode in ['1', '2', '3', '4', '9']:
+        return True
+    return False
+
+
 def is_valid_letter(letter):
     """
     check if letter is one of the abc letters (no matter upper or lower)

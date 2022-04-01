@@ -1,6 +1,7 @@
 import sys
-import tkinter as tk
-from tkinter import ttk
+from colorama import Fore, Style
+# import tkinter as tk
+# from tkinter import ttk
 
 import Repository
 import DTO
@@ -26,28 +27,38 @@ def welcome():
     enter = input("Please press enter to begin the game ")
 
 
-def main():
+def main():  # TODO: add menu options
     words_file = open(sys.argv[1], 'r')
     words = words_file.read()
     words_list = words.split(" ")
     words_file.close()
-    print(words_list)
     # connection = Repository.Repository(sys.argv[2])
     connection.create_table()
 
     game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
 
-    while game_mode != '1' and game_mode != '2':
-        print("Invalid level chosen")
+    while not is_valid_game_mode(game_mode):
+        # print("Invalid level chosen")
         game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
     print("You have 6 tries")
     time.sleep(0.5)
-    while game_mode == '1':
-        secret_word = choose_word(words_list)
-        game_mode = running_ultimate_game(secret_word)
-    while game_mode == '2':
-        secret_word = choose_word(words_list)
-        game_mode = running_score_game(secret_word)
+
+    while True:  # game run
+        match game_mode:
+            case '1':  # run an ultimate game
+                secret_word = choose_word(words_list)
+                game_mode = running_ultimate_game(secret_word)
+            case '2':  # run a score game
+                secret_word = choose_word(words_list)
+                game_mode = running_score_game(secret_word)
+            case '3':  # show hall of fame
+                connection.get_hall_of_fame()
+                game_mode = input()
+            case '4':  # show all time players
+                connection.get_all_time()
+                game_mode = input()
+            case '9':  # exit
+                break
 
     connection.close_db()
     words_file.close()
@@ -64,6 +75,7 @@ def running_ultimate_game(secret_word):
     old_letters_guessed = []
     num_of_tries = 0
     print_hangman(0)
+
     while num_of_tries < 6:
         print(show_hidden_word(secret_word, old_letters_guessed))
         letter_guessed = input("Please guess a letter: ").lower()
@@ -85,6 +97,7 @@ def running_ultimate_game(secret_word):
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
+
     return input("Choose 1 for new game or 0 to end the game ")
 
 
@@ -101,6 +114,7 @@ def running_score_game(secret_word):
     num_of_tries = 0
     print_hangman(0)
     start = time.time()
+
     while num_of_tries < 6:
         print(show_hidden_word(secret_word, old_letter_guessed))
         letter_guessed = input("Please guess a letter: ").lower()  # the user must choose a letter
@@ -127,6 +141,7 @@ def running_score_game(secret_word):
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
+
     return input("Choose 2 for new game or 0 to end the game ")
 
 

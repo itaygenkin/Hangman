@@ -17,3 +17,13 @@ class Repository:
     def close_db(self):
         self._connection.commit()
         self._connection.close()
+
+    def get_hall_of_fame(self):
+        cur = self._connection.cursor()
+        cur.execute("SELECT * FROM Hall_of_Fame ORDER BY score")
+        print(list(cur)[-10:])
+
+    def get_all_time(self):
+        cur = self._connection.cursor()
+        cur.execute("SELECT * FROM Hall_of_Fame ORDER BY score")
+        print(cur.fetchall())

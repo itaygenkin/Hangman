@@ -20,9 +20,9 @@ def welcome():
     # root.mainloop()
 
     print(Fore.CYAN + HANGMAN_ASCII_ART + Style.RESET_ALL)
-    time.sleep(1.2)
+    time.sleep(1)
     print("Welcome to the game Hangman")
-    time.sleep(1.2)
+    time.sleep(1)
     enter = input("Please press enter to begin the game ")
 
 

@@ -21,6 +21,12 @@ def choose_word(words_list):
 
 # return True iff the letter is a letter from the 'abc' (no matter if the letter is upper or lower)
 def is_valid_letter(letter):
+    """
+    check if letter is one of the abc letters (no matter upper or lower)
+    :param letter: char
+    :return: True if letter is a legal letter, False otherwise
+    :rtype: bool
+    """
     letter.lower()
     abc = string.ascii_lowercase
     if len(letter) == 1 and letter in abc:
@@ -136,5 +142,5 @@ HANGMAN_ASCII_ART = """  _    _
                      |___/"""
 
 
-def print_hangman(num_of_tries):  ###
+def print_hangman(num_of_tries):
     print(Fore.RED + HANGMAN_PHOTOS[num_of_tries] + Style.RESET_ALL)

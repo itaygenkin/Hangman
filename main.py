@@ -2,10 +2,11 @@ import sys
 from colorama import Fore, Style
 # import tkinter as tk
 # from tkinter import ttk
+# import kivy
 
 import Repository
 import DTO
-from Words import *
+from wordlib import *
 from DAO import Players
 
 connection = Repository.Repository(sys.argv[2])
@@ -27,7 +28,7 @@ def welcome():
     enter = input("Please press enter to begin the game ")
 
 
-def main():  # TODO: add menu options
+def main():
     words_file = open(sys.argv[1], 'r')
     words = words_file.read()
     words_list = words.split(" ")
@@ -35,33 +36,43 @@ def main():  # TODO: add menu options
     # connection = Repository.Repository(sys.argv[2])
     connection.create_table()
 
-    game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
-
-    while not is_valid_game_mode(game_mode):
-        # print("Invalid level chosen")
-        game_mode = input("Choose 1 for the ultimate game or 2 for the score game ")
-    print("You have 6 tries")
-    time.sleep(0.5)
-
+    game_option = menu()
     while True:  # game run
-        match game_mode:
+        match game_option:
             case '1':  # run an ultimate game
                 secret_word = choose_word(words_list)
-                game_mode = running_ultimate_game(secret_word)
+                running_ultimate_game(secret_word)
             case '2':  # run a score game
                 secret_word = choose_word(words_list)
-                game_mode = running_score_game(secret_word)
+                running_score_game(secret_word)
             case '3':  # show hall of fame
                 connection.get_hall_of_fame()
-                game_mode = input()
+                input("Press 'b' to back to menu")
             case '4':  # show all time players
                 connection.get_all_time()
-                game_mode = input()
+                input("Press 'b' to back to menu")
             case '9':  # exit
                 break
+        game_option = menu()
 
     connection.close_db()
     words_file.close()
+
+
+def menu():
+    """
+    show the menu options for the user
+    :return: a game option from the menu
+    """
+    mode = input("""    1 - Play a ultimate game
+    2 - Play a score game
+    3 - Hall of Fame
+    4 - All time players table
+    9 - exit\n""")
+    while not is_valid_game_mode(mode):
+        print("Invalid choice")
+        mode = menu()
+    return mode
 
 
 def running_ultimate_game(secret_word):
@@ -72,6 +83,8 @@ def running_ultimate_game(secret_word):
     :return: game mode
     :rtype: str
     """
+    print("You have 6 tries")
+    time.sleep(0.5)
     old_letters_guessed = []
     num_of_tries = 0
     print_hangman(0)
@@ -98,8 +111,6 @@ def running_ultimate_game(secret_word):
         if num_of_tries == 6:
             print("Loser!!")
 
-    return input("Choose 1 for new game or 0 to end the game ")
-
 
 def running_score_game(secret_word):
     """
@@ -109,7 +120,9 @@ def running_score_game(secret_word):
     :return: game mode
     :rtype: str
     """
-    time.sleep(0.3)
+    print("You have 6 tries")
+    time.sleep(0.5)
+    # time.sleep(0.3)
     old_letter_guessed = []
     num_of_tries = 0
     print_hangman(0)
@@ -141,8 +154,6 @@ def running_score_game(secret_word):
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
-
-    return input("Choose 2 for new game or 0 to end the game ")
 
 
 def add_to_db(score):

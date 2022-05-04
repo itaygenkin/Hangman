@@ -20,7 +20,7 @@ def choose_word(words_list):
 
 
 def is_valid_game_mode(mode):
-    if mode in ['1', '2', '3', '4', '9']:
+    if mode in ['1', '2', '3', '4', '5', '9']:
         return True
     return False
 
@@ -33,8 +33,8 @@ def is_valid_letter(letter):
     :rtype: bool
     """
     letter.lower()
-    abc = string.ascii_lowercase
-    if len(letter) == 1 and letter in abc:
+    abc_list = string.ascii_lowercase
+    if len(letter) == 1 and letter in abc_list:
         return True
     return False
 

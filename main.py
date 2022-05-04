@@ -1,29 +1,19 @@
-import os
 import sys
-# import tkinter as tk
-# from tkinter import ttk
 # import kivy
-
+from matplotlib import pyplot as plt
 import Repository
 import DTO
-from wordlib import *
 from DAO import Players
+from wordlib import *
 
 # if os.path.exists('Hall_of_Fame.db'):
 #     os.remove('Hall_of_Fame.db')
-print(sys.argv[2])
 connection = Repository.Repository(sys.argv[2])
 Hall_of_Fame = Players(connection)
 
 
 # printing the opening screen of the game
 def welcome():
-    # root = tk.Tk()
-    # frame = ttk.Frame(root, padding=180)
-    # frame.grid()
-    # ttk.Label(frame, text=HANGMAN_ASCII_ART).grid(column=0, row=0)
-    # root.mainloop()
-
     print(Fore.CYAN + HANGMAN_ASCII_ART + Style.RESET_ALL)
     # time.sleep(1)
     print("Welcome to the game Hangman")
@@ -38,7 +28,6 @@ def main():
     words_file.close()
     # connection = Repository.Repository(sys.argv[2])
     connection.create_table()
-
     game_option = menu()
     while True:  # game run
         match game_option:
@@ -50,12 +39,20 @@ def main():
                 running_score_game(secret_word)
             case '3':  # show hall of fame
                 top_ten_list = connection.get_hall_of_fame()
-                print('\n'.join(map(str, top_ten_list)), '\n')
+                print('\n'.join(top_ten_list), '\n')
                 input("Press 'b' to back to menu ")
             case '4':  # show all time players
                 all_time_list = connection.get_all_time()
                 print('\n'.join(map(str, all_time_list)), '\n')
                 input("Press 'b' to back to menu ")
+            case '5':  # show stats
+                y = connection.get_stats()
+                if y is None:
+                    print("No games were played\n")
+                else:
+                    my_lables = ["Wins {}%".format((y[0] / y.sum) * 100), "Failures {}%".format((y[1] / y.sum) * 100)]
+                    plt.pie(y, labels=my_lables, shadow=True)
+                    plt.show()
             case '9':  # exit
                 break
         game_option = menu()
@@ -73,6 +70,7 @@ def menu():
     2 - Play a score game
     3 - Hall of Fame
     4 - All time players table
+    5 - Statistics
     9 - exit\n""")
     while not is_valid_game_mode(mode):
         print("Invalid choice")
@@ -153,18 +151,20 @@ def running_score_game(secret_word):
                 print("Congratulations!")
                 print("You've got {} points!".format(score))
                 add_to_db(score)
+                connection.win_game()
                 break
         else:
             # time.sleep(0.3)
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
+            connection.lose_game()
 
 
 def add_to_db(score):
     name = input("Enter your name ")
     named_tuple = time.localtime()
-    time_string = time.strftime("%d/%m/%Y", named_tuple)
+    time_string = time.strftime("%m/%d/%Y", named_tuple)
     player = DTO.Player(name, score, time_string)
     Hall_of_Fame.insert(player)
 

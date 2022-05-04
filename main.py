@@ -1,5 +1,5 @@
+import os
 import sys
-from colorama import Fore, Style
 # import tkinter as tk
 # from tkinter import ttk
 # import kivy
@@ -9,6 +9,9 @@ import DTO
 from wordlib import *
 from DAO import Players
 
+# if os.path.exists('Hall_of_Fame.db'):
+#     os.remove('Hall_of_Fame.db')
+print(sys.argv[2])
 connection = Repository.Repository(sys.argv[2])
 Hall_of_Fame = Players(connection)
 
@@ -22,9 +25,9 @@ def welcome():
     # root.mainloop()
 
     print(Fore.CYAN + HANGMAN_ASCII_ART + Style.RESET_ALL)
-    time.sleep(1)
+    # time.sleep(1)
     print("Welcome to the game Hangman")
-    time.sleep(1)
+    # time.sleep(1)
     enter = input("Please press enter to begin the game ")
 
 
@@ -46,11 +49,13 @@ def main():
                 secret_word = choose_word(words_list)
                 running_score_game(secret_word)
             case '3':  # show hall of fame
-                connection.get_hall_of_fame()
-                input("Press 'b' to back to menu")
+                top_ten_list = connection.get_hall_of_fame()
+                print('\n'.join(map(str, top_ten_list)), '\n')
+                input("Press 'b' to back to menu ")
             case '4':  # show all time players
-                connection.get_all_time()
-                input("Press 'b' to back to menu")
+                all_time_list = connection.get_all_time()
+                print('\n'.join(map(str, all_time_list)), '\n')
+                input("Press 'b' to back to menu ")
             case '9':  # exit
                 break
         game_option = menu()
@@ -84,7 +89,7 @@ def running_ultimate_game(secret_word):
     :rtype: str
     """
     print("You have 6 tries")
-    time.sleep(0.5)
+    # time.sleep(0.5)
     old_letters_guessed = []
     num_of_tries = 0
     print_hangman(0)
@@ -96,17 +101,17 @@ def running_ultimate_game(secret_word):
         if try_update_letter_guessed(letter_guessed, old_letters_guessed):
             if letter_guessed not in secret_word:
                 print("Wrong guess :(")
-                time.sleep(0.5)
+                # time.sleep(0.5)
                 num_of_tries += 1
                 print_hangman(num_of_tries)
-                time.sleep(0.5)
+                # time.sleep(0.5)
                 print("Please try again")
             elif check_win(secret_word, old_letters_guessed):
                 print(show_hidden_word(secret_word, old_letters_guessed))
                 print("Congratulations!")
                 break
         else:
-            time.sleep(0.5)
+            # time.sleep(0.5)
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
@@ -121,7 +126,7 @@ def running_score_game(secret_word):
     :rtype: str
     """
     print("You have 6 tries")
-    time.sleep(0.5)
+    # time.sleep(0.5)
     # time.sleep(0.3)
     old_letter_guessed = []
     num_of_tries = 0
@@ -135,10 +140,10 @@ def running_score_game(secret_word):
         if try_update_letter_guessed(letter_guessed, old_letter_guessed):
             if letter_guessed not in secret_word:
                 print("Wrong guess :(")
-                time.sleep(0.5)
+                # time.sleep(0.5)
                 num_of_tries += 1
                 print_hangman(num_of_tries)
-                time.sleep(0.5)
+                # time.sleep(0.5)
                 start += 1
                 print("Please try again")
             elif check_win(secret_word, old_letter_guessed):
@@ -150,7 +155,7 @@ def running_score_game(secret_word):
                 add_to_db(score)
                 break
         else:
-            time.sleep(0.3)
+            # time.sleep(0.3)
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
@@ -159,7 +164,7 @@ def running_score_game(secret_word):
 def add_to_db(score):
     name = input("Enter your name ")
     named_tuple = time.localtime()
-    time_string = time.strftime("%m/%d/%Y", named_tuple)
+    time_string = time.strftime("%d/%m/%Y", named_tuple)
     player = DTO.Player(name, score, time_string)
     Hall_of_Fame.insert(player)
 

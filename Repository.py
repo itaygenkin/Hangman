@@ -21,9 +21,15 @@ class Repository:
     def get_hall_of_fame(self):
         cur = self._connection.cursor()
         cur.execute("SELECT * FROM Hall_of_Fame ORDER BY score")
-        print(list(cur)[-10:])
+        try:
+            output = (list(cur)[-10:]).reverse()
+        except:
+            print(type(cur))
+            print(list(cur))
+        else:
+            return output
 
     def get_all_time(self):
         cur = self._connection.cursor()
         cur.execute("SELECT * FROM Hall_of_Fame ORDER BY score")
-        print(cur.fetchall())
+        return (cur.fetchall()).reverse()

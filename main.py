@@ -1,4 +1,5 @@
 import sys
+import os
 # import kivy
 from matplotlib import pyplot as plt
 import Repository
@@ -164,7 +165,7 @@ def running_score_game(secret_word):
 def add_to_db(score):
     name = input("Enter your name ")
     named_tuple = time.localtime()
-    time_string = time.strftime("%m/%d/%Y", named_tuple)
+    time_string = time.strftime("%d/%m/%Y", named_tuple)
     player = DTO.Player(name, score, time_string)
     Hall_of_Fame.insert(player)
 

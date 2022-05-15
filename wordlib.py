@@ -1,7 +1,51 @@
+import json
 import string
 import time
-from random import random
+import random
 from colorama import Fore, Style
+
+
+def parse_json_to_dict(file):
+    """
+    parse a json file, and convert it to dictionary
+    :param file: json file to read
+    :return: dictionary of object(str) - list of str
+    :rtype: dictionary
+    """
+    data = json.loads(file.read())
+    parsed_dict = {}
+    for o in data:
+        parsed_dict[o] = data[o]
+    return parsed_dict
+
+
+def choose_subject(words_dict):
+    """
+    get a dict and ask the user to choose a subject from the dict keys
+    :param words_dict: dictionary which the keys are the subject that the user can choose
+    :return: a key (subject) from the dict
+    :rtype: str
+    """
+    subjects_list = list(words_dict.keys())
+    print("Choose subject: ")
+    for i in range(len(subjects_list)):
+        print(i, f"- {subjects_list[i]}")
+    subject_chosen = int(input())
+    return subjects_list[subject_chosen]
+
+
+def choose_word_by_subject(subject, words_dict):
+    """
+    chooses a word from a list of words by the key=subject
+    :param subject: the subject from the user which the word should be relate to
+    :param words_dict: dictionary of subjects and words
+    :type subject: str
+    :type words_dict: dict
+    :return: a word from the values list of the key (subject)
+    :rtype: str
+    """
+    words_list = words_dict[subject]
+    return random.choice(words_list)
 
 
 def choose_word(words_list):
@@ -12,7 +56,7 @@ def choose_word(words_list):
     :return: a random word
     :rtype: str
     """
-    k = random()
+    k = random.random()
     k = int(k * len(words_list))
     if words_list[k][-1] == '\n':
         words_list[k] = words_list[k][:-1]

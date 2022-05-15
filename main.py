@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 # import kivy
 from matplotlib import pyplot as plt
 import Repository
@@ -27,13 +28,19 @@ def main():
     words = words_file.read()
     words_list = words.split(" ")
     words_file.close()
+
+    file = open(sys.argv[3], 'r')
+    words_dict = parse_json_to_dict(file)
+    file.close()
     # connection = Repository.Repository(sys.argv[2])
     connection.create_table()
     game_option = menu()
     while True:  # game run
         match game_option:
             case '1':  # run an ultimate game
-                secret_word = choose_word(words_list)
+                subject = choose_subject(words_dict)
+                secret_word = choose_word_by_subject(subject, words_dict)
+                # secret_word = choose_word(words_list)
                 running_ultimate_game(secret_word)
             case '2':  # run a score game
                 secret_word = choose_word(words_list)

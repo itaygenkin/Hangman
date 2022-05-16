@@ -29,7 +29,7 @@ def choose_subject(words_dict):
     subjects_list = list(words_dict.keys())
     print("Choose subject: ")
     for i in range(len(subjects_list)):
-        print(i, f"- {subjects_list[i]}")
+        print("\t", i, f"- {subjects_list[i]}")
     subject_chosen = int(input())
     return subjects_list[subject_chosen]
 
@@ -63,8 +63,19 @@ def choose_word(words_list):
     return words_list[k]
 
 
-def is_valid_game_mode(mode):
-    if mode in ['1', '2', '3', '4', '5', '9']:
+def is_valid_game_mode(mode, menu):
+    """
+    check if the mode the user chose is valid in the current menu
+    :param mode:
+    :param menu: the current menu
+    :return: whether the mode is legal or not\
+    :rtype: bool
+    """
+    mode_list = ['1', '2', '3', '4']
+    if menu == 1:
+        mode_list.append('5')
+        mode_list.append('9')
+    if mode in mode_list:
         return True
     return False
 

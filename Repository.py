@@ -5,31 +5,41 @@ import numpy as np
 class Repository:
     def __init__(self, db_location):
         self._connection = sqlite3.connect(db_location)
-        self._num_of_wins = 0
-        self._num_of_failures = 0
 
     def create_table(self):
         cur = self._connection.cursor()
         cur.execute("""
         CREATE TABLE IF NOT EXISTS Hall_of_Fame(
-            name    STRING      NOT NULL,
-            score   INTEGER     NOT NULL,
-            date    STRING      NOT NULL
+            username    STRING      NOT NULL,
+            score       INTEGER     NOT NULL,
+            date        STRING      NOT NULL
         )""")
-
-    def get_stats(self):
-        stats = np.array([self._num_of_wins, self._num_of_failures])
-        return stats if stats[0] + stats[1] > 1 else None
-
-    def win_game(self):
-        self._num_of_wins += 1
-
-    def lose_game(self):
-        self._num_of_failures += 1
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS All_Players(
+            username    STRING      NOT NULL    PRIMARY KEY,
+            password    STRING      NOT NULL    PRIMARY KEY,
+            games       INTEGER,
+            wins        INTEGER,
+        """)
 
     def close_db(self):
         self._connection.commit()
         self._connection.close()
+
+    def win_game(self, player):
+        # TODO: implement
+        pass
+
+    def lose_game(self, player):
+        # TODO: implement
+        pass
+
+    def get_stats(self, player):
+        # TODO: correct (using 'SELECT...')
+        wins = player._num_of_wins
+        failures = player._num_of_games - wins
+        stats = np.array([wins, failures])
+        return stats if stats[0] + stats[1] > 1 else None
 
     def get_hall_of_fame(self):
         cur = self._connection.cursor()
@@ -43,3 +53,17 @@ class Repository:
         cur = self._connection.cursor()
         cur.execute("SELECT * FROM Hall_of_Fame ORDER BY score")
         return cur.fetchall()
+
+    def is_already_registered(self, name):
+        cur = self._connection.cursor()
+        cur.execute("""
+            SELECT username FROM All_Players WHERE username=?
+            """, (name,))
+        exists = cur.fetchall()
+        if not exists:
+            return True
+        return False
+
+    def login(self, default=False):
+        # TODO: implement
+        pass

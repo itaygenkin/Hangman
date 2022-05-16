@@ -1,26 +1,42 @@
 import sys
 import os
-import json
 # import kivy
 from matplotlib import pyplot as plt
+
+import DAO
 import Repository
 import DTO
-from DAO import Players
+from DAO import Players, Games
 from wordlib import *
 
 # if os.path.exists('Hall_of_Fame.db'):
 #     os.remove('Hall_of_Fame.db')
 connection = Repository.Repository(sys.argv[2])
-Hall_of_Fame = Players(connection)
+Hall_of_Fame = Games(connection)
+All_Players = Players(connection)
 
 
 # printing the opening screen of the game
 def welcome():
     print(Fore.CYAN + HANGMAN_ASCII_ART + Style.RESET_ALL)
-    # time.sleep(1)
     print("Welcome to the game Hangman")
-    # time.sleep(1)
     enter = input("Please press enter to begin the game ")
+
+
+def enter_page():
+    game_option = menu_1()
+    player = None
+    match game_option:
+        case '1':
+            register()
+            player = connection.login()  # TODO: implement the function login()
+        case '2':
+            player = connection.login()
+        case '3':
+            player = connection.login(default=True)
+        case '4':
+            pass
+    return player
 
 
 def main():
@@ -32,9 +48,9 @@ def main():
     file = open(sys.argv[3], 'r')
     words_dict = parse_json_to_dict(file)
     file.close()
-    # connection = Repository.Repository(sys.argv[2])
+
     connection.create_table()
-    game_option = menu()
+    game_option = menu_2()
     while True:  # game run
         match game_option:
             case '1':  # run an ultimate game
@@ -54,25 +70,43 @@ def main():
                 print('\n'.join(map(str, all_time_list)), '\n')
                 input("Press 'b' to back to menu ")
             case '5':  # show stats
-                y = connection.get_stats()
+                y = connection.get_stats()  # TODO: correct
                 if y is None:
                     print("No games were played\n")
                 else:
+                    # TODO: change to modern format
                     my_lables = ["Wins {}%".format((y[0] / y.sum) * 100), "Failures {}%".format((y[1] / y.sum) * 100)]
                     plt.pie(y, labels=my_lables, shadow=True)
                     plt.show()
             case '9':  # exit
                 break
-        game_option = menu()
+        game_option = menu_2()
 
     connection.close_db()
     words_file.close()
 
 
-def menu():
+def menu_1():
     """
-    show the menu options for the user
+    show the initial menu option for the user
+    :return: a menu option
+    :rtype: char
+    """
+    mode = input("""    1 - Register
+    2 - Login
+    3 - Play as a guest
+    4- exit\n""")
+    while not is_valid_game_mode(mode, 1):
+        print("Invalid choice")
+        mode = menu_1()
+    return mode
+
+
+def menu_2():
+    """
+    show the menu of game options for the user
     :return: a game option from the menu
+    :rtype: char
     """
     mode = input("""    1 - Play a ultimate game
     2 - Play a score game
@@ -80,10 +114,20 @@ def menu():
     4 - All time players table
     5 - Statistics
     9 - exit\n""")
-    while not is_valid_game_mode(mode):
+    while not is_valid_game_mode(mode, 2):
         print("Invalid choice")
-        mode = menu()
+        mode = menu_2()
     return mode
+
+
+def register():
+    username = input("Choose an username: ")
+    while connection.is_already_registered(username):
+        print("Username f{username} is already exists")
+        username = input("Choose different username: ")
+    password = input("Choose a password: ")
+    new_player = DTO.Player(username, password)
+    All_Players.register(new_player)
 
 
 def running_ultimate_game(secret_word):
@@ -95,7 +139,6 @@ def running_ultimate_game(secret_word):
     :rtype: str
     """
     print("You have 6 tries")
-    # time.sleep(0.5)
     old_letters_guessed = []
     num_of_tries = 0
     print_hangman(0)
@@ -107,17 +150,14 @@ def running_ultimate_game(secret_word):
         if try_update_letter_guessed(letter_guessed, old_letters_guessed):
             if letter_guessed not in secret_word:
                 print("Wrong guess :(")
-                # time.sleep(0.5)
                 num_of_tries += 1
                 print_hangman(num_of_tries)
-                # time.sleep(0.5)
                 print("Please try again")
             elif check_win(secret_word, old_letters_guessed):
                 print(show_hidden_word(secret_word, old_letters_guessed))
                 print("Congratulations!")
                 break
         else:
-            # time.sleep(0.5)
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
@@ -132,8 +172,6 @@ def running_score_game(secret_word):
     :rtype: str
     """
     print("You have 6 tries")
-    # time.sleep(0.5)
-    # time.sleep(0.3)
     old_letter_guessed = []
     num_of_tries = 0
     print_hangman(0)
@@ -146,37 +184,36 @@ def running_score_game(secret_word):
         if try_update_letter_guessed(letter_guessed, old_letter_guessed):
             if letter_guessed not in secret_word:
                 print("Wrong guess :(")
-                # time.sleep(0.5)
                 num_of_tries += 1
                 print_hangman(num_of_tries)
-                # time.sleep(0.5)
-                start += 1
                 print("Please try again")
             elif check_win(secret_word, old_letter_guessed):
                 timer = time.time() - start
                 score = compute_score(timer, secret_word)
                 print(show_hidden_word(secret_word, old_letter_guessed))
                 print("Congratulations!")
-                print("You've got {} points!".format(score))
+                print(f"You've got {score} points!")
                 add_to_db(score)
-                connection.win_game()
+                connection.win_game()  # TODO: add argument
                 break
         else:
-            # time.sleep(0.3)
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
-            connection.lose_game()
+            connection.lose_game()  # TODO: add argument
 
 
 def add_to_db(score):
     name = input("Enter your name ")
     named_tuple = time.localtime()
     time_string = time.strftime("%d/%m/%Y", named_tuple)
-    player = DTO.Player(name, score, time_string)
-    Hall_of_Fame.insert(player)
+    game = DTO.Game(name, score, time_string)
+    Hall_of_Fame.insert(game)
 
 
 if __name__ == '__main__':
     welcome()
+    player = enter_page()  # TODO: make player global
+    if player is None:
+        pass
     main()

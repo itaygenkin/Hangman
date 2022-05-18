@@ -27,19 +27,40 @@ class Repository:
         self._connection.close()
 
     def win_game(self, player):
-        # TODO: implement
-        pass
+        cur = self._connection.cursor()
+        cur.execute("""
+            UPDATE All_Players 
+            SET wins = wins + 1 
+            WHERE username = ?
+        """, (player.username,))
+        cur.execute("""
+            UPDATE All_Players 
+            SET games = games + 1 
+            WHERE username = ?
+        """, (player.username,))
 
     def lose_game(self, player):
-        # TODO: implement
-        pass
+        cur = self._connection.cursor()
+        cur.execute("""
+            UPDATE All_Players 
+            SET games = games + 1 
+            WHERE username = ?
+        """, (player.username,))
 
     def get_stats(self, player):
-        # TODO: correct (using 'SELECT...')
-        wins = player._num_of_wins
-        failures = player._num_of_games - wins
-        stats = np.array([wins, failures])
-        return stats if stats[0] + stats[1] > 1 else None
+        """
+        select the number of games and wins of the current player
+        :param player: the player which is currently playing
+        :return: array (np) of player's games and wins
+        """
+        cur = self._connection.cursor()
+        cur.execute("""
+            SELECT games, wins 
+            FROM All_Players 
+            WHERE username = ?
+        """, (player.username,))
+        stats = np.array(cur.fetchall())
+        return stats if stats[0] > 0 else None
 
     def get_hall_of_fame(self):
         cur = self._connection.cursor()
@@ -57,8 +78,8 @@ class Repository:
     def is_already_registered(self, name):
         cur = self._connection.cursor()
         cur.execute("""
-            SELECT username FROM All_Players WHERE username=?
-            """, (name,))
+            SELECT username FROM All_Players WHERE username = ?
+        """, (name,))
         exists = cur.fetchall()
         if not exists:
             return True

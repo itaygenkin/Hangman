@@ -40,26 +40,29 @@ def enter_page():
 
 
 def main():
+    # reading txt file
     words_file = open(sys.argv[1], 'r')
     words = words_file.read()
     words_list = words.split(" ")
     words_file.close()
 
+    # reading json file
     file = open(sys.argv[3], 'r')
     words_dict = parse_json_to_dict(file)
     file.close()
 
     connection.create_table()
+
+    # game run
     game_option = menu_2()
-    while True:  # game run
+    while True:
         match game_option:
             case '1':  # run an ultimate game
                 subject = choose_subject(words_dict)
                 secret_word = choose_word_by_subject(subject, words_dict)
-                # secret_word = choose_word(words_list)
                 running_ultimate_game(secret_word)
             case '2':  # run a score game
-                secret_word = choose_word(words_list)
+                secret_word = choose_word(words_list)  # TODO: take the word from a json file
                 running_score_game(secret_word)
             case '3':  # show hall of fame
                 top_ten_list = connection.get_hall_of_fame()
@@ -74,8 +77,9 @@ def main():
                 if y is None:
                     print("No games were played\n")
                 else:
-                    # TODO: change to modern format
-                    my_lables = ["Wins {}%".format((y[0] / y.sum) * 100), "Failures {}%".format((y[1] / y.sum) * 100)]
+                    wins = (y[1] / y[0]) * 100
+                    failures = ((y[0] - y[1]) / y[1]) * 100
+                    my_lables = [f"Wins {wins}%", f"Failures {failures}%"]
                     plt.pie(y, labels=my_lables, shadow=True)
                     plt.show()
             case '9':  # exit

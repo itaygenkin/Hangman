@@ -9,11 +9,13 @@ import DTO
 from DAO import Players, Games
 from wordlib import *
 
-# if os.path.exists('Hall_of_Fame.db'):
-#     os.remove('Hall_of_Fame.db')
+# if os.path.exists('Game_Database.db'):
+#     os.remove('Game_Database.db')
 connection = Repository.Repository(sys.argv[2])
+connection.create_table()
 Hall_of_Fame = Games(connection)
 All_Players = Players(connection)
+global player
 
 
 # printing the opening screen of the game
@@ -24,22 +26,22 @@ def welcome():
 
 
 def enter_page():
+    global player
     game_option = menu_1()
-    player = None
     match game_option:
         case '1':
-            register()
-            player = connection.login()  # TODO: implement the function login()
+            player = register()
         case '2':
             player = connection.login()
         case '3':
             player = connection.login(default=True)
         case '4':
-            pass
+            return None
     return player
 
 
 def main():
+    global player
     # reading txt file
     words_file = open(sys.argv[1], 'r')
     words = words_file.read()
@@ -51,7 +53,7 @@ def main():
     words_dict = parse_json_to_dict(file)
     file.close()
 
-    connection.create_table()
+    # connection.create_table()
 
     # game run
     game_option = menu_2()
@@ -62,7 +64,9 @@ def main():
                 secret_word = choose_word_by_subject(subject, words_dict)
                 running_ultimate_game(secret_word)
             case '2':  # run a score game
-                secret_word = choose_word(words_list)  # TODO: take the word from a json file
+                # secret_word = choose_word(words_list)
+                subject = choose_subject(words_dict)
+                secret_word = choose_word_by_subject(subject, words_dict)
                 running_score_game(secret_word)
             case '3':  # show hall of fame
                 top_ten_list = connection.get_hall_of_fame()
@@ -73,7 +77,7 @@ def main():
                 print('\n'.join(map(str, all_time_list)), '\n')
                 input("Press 'b' to back to menu ")
             case '5':  # show stats
-                y = connection.get_stats()  # TODO: correct
+                y = connection.get_stats(player)  # TODO: debug
                 if y is None:
                     print("No games were played\n")
                 else:
@@ -99,7 +103,7 @@ def menu_1():
     mode = input("""    1 - Register
     2 - Login
     3 - Play as a guest
-    4- exit\n""")
+    4 - exit\n""")
     while not is_valid_game_mode(mode, 1):
         print("Invalid choice")
         mode = menu_1()
@@ -125,13 +129,18 @@ def menu_2():
 
 
 def register():
+    """
+    register a new user and sign in
+    :return: a new player
+    """
     username = input("Choose an username: ")
     while connection.is_already_registered(username):
-        print("Username f{username} is already exists")
+        print("Username " + Fore.MAGENTA + username + Style.RESET_ALL + " is already exists")
         username = input("Choose different username: ")
     password = input("Choose a password: ")
     new_player = DTO.Player(username, password)
     All_Players.register(new_player)
+    return new_player
 
 
 def running_ultimate_game(secret_word):
@@ -175,6 +184,7 @@ def running_score_game(secret_word):
     :return: game mode
     :rtype: str
     """
+    global player
     print("You have 6 tries")
     old_letter_guessed = []
     num_of_tries = 0
@@ -198,13 +208,13 @@ def running_score_game(secret_word):
                 print("Congratulations!")
                 print(f"You've got {score} points!")
                 add_to_db(score)
-                connection.win_game()  # TODO: add argument
+                connection.win_game(player)
                 break
         else:
             print("Invalid letter, please try again")
         if num_of_tries == 6:
             print("Loser!!")
-            connection.lose_game()  # TODO: add argument
+            connection.lose_game(player)
 
 
 def add_to_db(score):
@@ -216,8 +226,8 @@ def add_to_db(score):
 
 
 if __name__ == '__main__':
+    global player
     welcome()
-    player = enter_page()  # TODO: make player global
-    if player is None:
-        pass
+    if enter_page() is None:
+        exit()
     main()

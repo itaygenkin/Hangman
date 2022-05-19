@@ -72,7 +72,7 @@ def is_valid_game_mode(mode, menu):
     :rtype: bool
     """
     mode_list = ['1', '2', '3', '4']
-    if menu == 1:
+    if menu == 2:
         mode_list.append('5')
         mode_list.append('9')
     if mode in mode_list:

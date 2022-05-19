@@ -5,8 +5,8 @@ class Players:
     def register(self, player):
         cur = self._conn._connection.cursor()
         cur.execute("""
-            INSERT INTO All_Players (username, password, games, wins) VALUES(?, ?, ?)
-            """, [player.username, player.password, player.num_of_games, player.num_of_wins])
+            INSERT INTO All_Players (username, password, games, wins) VALUES(?, ?, ?, ?)
+            """, [player.username, player.password, 0, 0])
 
 
 class Games:

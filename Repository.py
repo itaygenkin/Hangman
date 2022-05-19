@@ -1,6 +1,8 @@
 import sqlite3
 import numpy as np
 
+import DTO
+
 
 class Repository:
     def __init__(self, db_location):
@@ -8,19 +10,20 @@ class Repository:
 
     def create_table(self):
         cur = self._connection.cursor()
+        # TODO: reimplement Hall_of_Fame table and use reference to the players
         cur.execute("""
-        CREATE TABLE IF NOT EXISTS Hall_of_Fame(
-            username    STRING      NOT NULL,
-            score       INTEGER     NOT NULL,
-            date        STRING      NOT NULL
-        )""")
+            CREATE TABLE IF NOT EXISTS Hall_of_Fame(
+                username    STRING      NOT NULL,
+                score       INTEGER     NOT NULL,
+                date        STRING      NOT NULL
+            )""")
         cur.execute("""
-        CREATE TABLE IF NOT EXISTS All_Players(
-            username    STRING      NOT NULL    PRIMARY KEY,
-            password    STRING      NOT NULL    PRIMARY KEY,
-            games       INTEGER,
-            wins        INTEGER,
-        """)
+            CREATE TABLE IF NOT EXISTS All_Players(
+                username    STRING      PRIMARY KEY,
+                password    STRING      NOT NULL,
+                games       INTEGER,
+                wins        INTEGER
+            )""")
 
     def close_db(self):
         self._connection.commit()
@@ -59,7 +62,8 @@ class Repository:
             FROM All_Players 
             WHERE username = ?
         """, (player.username,))
-        stats = np.array(cur.fetchall())
+        x = cur.fetchall()
+        stats = np.array(x)
         return stats if stats[0] > 0 else None
 
     def get_hall_of_fame(self):
@@ -68,7 +72,7 @@ class Repository:
         output = cur.fetchall()
         n = min(10, len(output))
         output = output[-n:]
-        return [str(output[x]) for x in range(n-1, -1, -1)] if n > 0 else ["No games were played"]
+        return [str(output[x]) for x in range(n - 1, -1, -1)] if n > 0 else ["No games were played"]
 
     def get_all_time(self):
         cur = self._connection.cursor()
@@ -81,10 +85,22 @@ class Repository:
             SELECT username FROM All_Players WHERE username = ?
         """, (name,))
         exists = cur.fetchall()
-        if not exists:
+        if exists:
             return True
         return False
 
     def login(self, default=False):
-        # TODO: implement
-        pass
+        # TODO: test
+        cur = self._connection.cursor()
+        if default:
+            cur.execute("""
+                SELECT * FROM All_Players WHERE username = ?
+            """, ("guest",))
+            return DTO.Player(*cur.fetchall()[0])
+        else:
+            name = input("Username: ")
+            password = input("Password: ")
+            cur.execute("""
+                SELECT * FROM All_Players WHERE (username, password) = (?, ?)
+            """, (name, password))
+            return DTO.Player(*cur.fetchall()[0])

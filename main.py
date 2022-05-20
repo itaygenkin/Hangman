@@ -3,7 +3,6 @@ import os
 # import kivy
 from matplotlib import pyplot as plt
 
-import DAO
 import Repository
 import DTO
 from DAO import Players, Games
@@ -33,6 +32,7 @@ def enter_page():
             player = register()
         case '2':
             player = connection.login()
+            print(player.num_of_games)
         case '3':
             player = connection.login(default=True)
         case '4':
@@ -77,7 +77,7 @@ def main():
                 print('\n'.join(map(str, all_time_list)), '\n')
                 input("Press 'b' to back to menu ")
             case '5':  # show stats
-                y = connection.get_stats(player)  # TODO: debug
+                y = connection.get_stats(player)
                 if y is None:
                     print("No games were played\n")
                 else:

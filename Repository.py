@@ -63,8 +63,8 @@ class Repository:
             WHERE username = ?
         """, (player.username,))
         x = cur.fetchall()
-        stats = np.array(x)
-        return stats if stats[0] > 0 else None  # TODO: debug
+        stats = np.array(*x)
+        return stats if stats[0] > 0 else None
 
     def get_hall_of_fame(self):
         cur = self._connection.cursor()

@@ -29,9 +29,14 @@ def choose_subject(words_dict):
     subjects_list = list(words_dict.keys())
     print("Choose subject: ")
     for i in range(len(subjects_list)):
-        print("\t", i, f"- {subjects_list[i]}")
-    subject_chosen = int(input())
-    return subjects_list[subject_chosen]
+        print("\t", i+1, f"- {subjects_list[i]}")
+    subject_chosen = input()
+    try:
+        subject_chosen = int(subject_chosen)
+    except:
+        print("Invalid choice")
+        return choose_subject(words_dict)
+    return subjects_list[subject_chosen-1]
 
 
 def choose_word_by_subject(subject, words_dict):

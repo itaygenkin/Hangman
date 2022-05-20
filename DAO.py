@@ -17,4 +17,4 @@ class Games:
         cur = self._conn._connection.cursor()
         cur.execute("""
             INSERT INTO Hall_of_Fame (username, score, date) VALUES(?, ?, ?)
-            """, [game.name, game.score, game.date])
+            """, [game.username, game.score, game.date])

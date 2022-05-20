@@ -218,10 +218,10 @@ def running_score_game(secret_word):
 
 
 def add_to_db(score):
-    name = input("Enter your name ")
+    global player
     named_tuple = time.localtime()
     time_string = time.strftime("%d/%m/%Y", named_tuple)
-    game = DTO.Game(name, score, time_string)
+    game = DTO.Game(player.username, score, time_string)
     Hall_of_Fame.insert(game)
 
 

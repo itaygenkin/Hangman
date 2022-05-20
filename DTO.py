@@ -1,11 +1,5 @@
 class Player:
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-        self.num_of_games = 0
-        self.num_of_wins = 0
-
-    def __init__(self, username, password, games, wins):
+    def __init__(self, username, password, games=0, wins=0):
         self.username = username
         self.password = password
         self.num_of_games = games

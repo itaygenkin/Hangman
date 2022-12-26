@@ -106,7 +106,7 @@ def try_update_letter_guessed(letter_guessed, old_letters_guessed):
         return True
     else:
         print("X")
-        time.sleep(0.3)
+        # time.sleep(0.3)
         separator = ' --> '
         old_letters_guessed.sort()
         print("Letters guessed: " + separator.join(old_letters_guessed))

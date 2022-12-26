@@ -4,6 +4,7 @@ class Player:
         self.password = password
         self.num_of_games = games
         self.num_of_wins = wins
+        self.wins_in_row = 0
 
 
 class Game:

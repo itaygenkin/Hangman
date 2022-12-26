@@ -1,19 +1,13 @@
-import sys
 import os
-# import kivy
+import sys
 from matplotlib import pyplot as plt
 
+import DAO
 import Repository
 import DTO
 from DAO import Players, Games
 from wordlib import *
 
-# if os.path.exists('Game_Database.db'):
-#     os.remove('Game_Database.db')
-connection = Repository.Repository(sys.argv[2])
-connection.create_table()
-Hall_of_Fame = Games(connection)
-All_Players = Players(connection)
 global player
 
 
@@ -21,20 +15,28 @@ global player
 def welcome():
     print(Fore.CYAN + HANGMAN_ASCII_ART + Style.RESET_ALL)
     print("Welcome to the game Hangman")
-    enter = input("Please press enter to begin the game ")
+    input("Please press enter to begin the game ")
 
 
 def enter_page():
     global player
     game_option = menu_1()
     match game_option:
+        # register
         case '1':
             player = register()
+        # login
         case '2':
             player = connection.login()
-            print(player.num_of_games)
+            while player is None:
+                enter_page()
+        # guest login
         case '3':
             player = connection.login(default=True)
+            if player is None:
+                player = DTO.Player('guest', 'guest')
+                All_Players.register(player)
+        # exit
         case '4':
             return None
     return player
@@ -43,55 +45,63 @@ def enter_page():
 def main():
     global player
     # reading txt file
-    words_file = open(sys.argv[1], 'r')
-    words = words_file.read()
-    words_list = words.split(" ")
-    words_file.close()
+    # words_file = open(sys.argv[1], 'r')
+    # words = words_file.read()
+    # words_list = words.split(" ")
+    # words_file.close()
 
     # reading json file
     file = open(sys.argv[3], 'r')
     words_dict = parse_json_to_dict(file)
     file.close()
 
-    # connection.create_table()
-
     # game run
     game_option = menu_2()
     while True:
         match game_option:
-            case '1':  # run an ultimate game
+            # run an ultimate game
+            case '1':
                 subject = choose_subject(words_dict)
                 secret_word = choose_word_by_subject(subject, words_dict)
                 running_ultimate_game(secret_word)
-            case '2':  # run a score game
+
+            # run a score game
+            case '2':
                 # secret_word = choose_word(words_list)
                 subject = choose_subject(words_dict)
                 secret_word = choose_word_by_subject(subject, words_dict)
                 running_score_game(secret_word)
-            case '3':  # show hall of fame
+
+            # show hall of fame
+            case '3':
                 top_ten_list = connection.get_hall_of_fame()
                 print('\n'.join(top_ten_list), '\n')
                 input("Press 'b' to back to menu ")
-            case '4':  # show all time players
+
+            # show all time players
+            case '4':
                 all_time_list = connection.get_all_time()
                 print('\n'.join(map(str, all_time_list)), '\n')
                 input("Press 'b' to back to menu ")
-            case '5':  # show stats
+
+            # show stats
+            case '5':
                 y = connection.get_stats(player)
                 if y is None:
                     print("No games were played\n")
                 else:
                     wins = (y[1] / y[0]) * 100
-                    failures = ((y[0] - y[1]) / y[1]) * 100
+                    failures = (((y[0] - y[1]) / y[0]) * 100).round(2)
                     my_lables = [f"Wins {wins}%", f"Failures {failures}%"]
                     plt.pie(y, labels=my_lables, shadow=True)
                     plt.show()
-            case '9':  # exit
+
+            # exit
+            case '9':
                 break
         game_option = menu_2()
 
     connection.close_db()
-    words_file.close()
 
 
 def menu_1():
@@ -226,7 +236,14 @@ def add_to_db(score):
 
 
 if __name__ == '__main__':
-    global player
+    # if os.path.exists('Hall_of_Fame.db'):
+    #     os.remove('Hall_of_Fame.db')
+    connection = Repository.Repository(sys.argv[2])
+    connection.create_table()
+
+    Hall_of_Fame = Games(connection)
+    All_Players = Players(connection)
+
     welcome()
     if enter_page() is None:
         exit()

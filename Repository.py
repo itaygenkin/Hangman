@@ -1,16 +1,14 @@
 import sqlite3
 import numpy as np
-
 import DTO
 
 
 class Repository:
     def __init__(self, db_location):
-        self._connection = sqlite3.connect(db_location)
+        self.connection = sqlite3.connect(db_location)
 
     def create_table(self):
-        cur = self._connection.cursor()
-        # TODO: reimplement Hall_of_Fame table and use reference to the players
+        cur = self.connection.cursor()
         cur.execute("""
             CREATE TABLE IF NOT EXISTS Hall_of_Fame(
                 username    STRING      NOT NULL,
@@ -22,33 +20,42 @@ class Repository:
                 username    STRING      PRIMARY KEY,
                 password    STRING      NOT NULL,
                 games       INTEGER,
-                wins        INTEGER
+                wins        INTEGER,
+                row         INTEGER
             )""")
+        cur.close()
 
     def close_db(self):
-        self._connection.commit()
-        self._connection.close()
+        self.connection.commit()
+        self.connection.close()
 
     def win_game(self, player):
-        cur = self._connection.cursor()
+        cur = self.connection.cursor()
         cur.execute("""
             UPDATE All_Players 
-            SET wins = wins + 1 
+            SET wins = wins + 1, games = games + 1, row = row + 1 
             WHERE username = ?
         """, (player.username,))
-        cur.execute("""
-            UPDATE All_Players 
-            SET games = games + 1 
-            WHERE username = ?
-        """, (player.username,))
+        # cur.execute("""
+        #     UPDATE All_Players
+        #     SET games = games + 1
+        #     WHERE username = ?
+        # """, (player.username,))
+        cur.close()
 
     def lose_game(self, player):
-        cur = self._connection.cursor()
+        cur = self.connection.cursor()
         cur.execute("""
             UPDATE All_Players 
-            SET games = games + 1 
+            SET games = games + 1, row = row + 1 
             WHERE username = ?
         """, (player.username,))
+        # cur.execute("""
+        #     UPDATE All_Players
+        #     SET row = row + 1
+        #     WHERE username = ?
+        # """, (player.username,))
+        cur.close()
 
     def get_stats(self, player):
         """
@@ -56,51 +63,60 @@ class Repository:
         :param player: the player which is currently playing
         :return: array (np) of player's games and wins
         """
-        cur = self._connection.cursor()
+        cur = self.connection.cursor()
         cur.execute("""
             SELECT games, wins 
             FROM All_Players 
             WHERE username = ?
         """, (player.username,))
         x = cur.fetchall()
+        cur.close()
         stats = np.array(*x)
         return stats if stats[0] > 0 else None
 
     def get_hall_of_fame(self):
-        cur = self._connection.cursor()
+        cur = self.connection.cursor()
         cur.execute("SELECT * FROM Hall_of_Fame ORDER BY score")
         output = cur.fetchall()
+        cur.close()
         n = min(10, len(output))
         output = output[-n:]
         return [str(output[x]) for x in range(n - 1, -1, -1)] if n > 0 else ["No games were played"]
 
     def get_all_time(self):
-        cur = self._connection.cursor()
+        cur = self.connection.cursor()
         cur.execute("SELECT * FROM Hall_of_Fame ORDER BY score")
+        cur.close()
         return cur.fetchall()
 
     def is_already_registered(self, name):
-        cur = self._connection.cursor()
+        cur = self.connection.cursor()
         cur.execute("""
             SELECT username FROM All_Players WHERE username = ?
         """, (name,))
         exists = cur.fetchall()
-        if exists:
-            return True
-        return False
+        cur.close()
+        return True if exists else False
 
     def login(self, default=False):
-        # TODO: test
-        cur = self._connection.cursor()
+        cur = self.connection.cursor()
         if default:
             cur.execute("""
                 SELECT * FROM All_Players WHERE username = ?
             """, ("guest",))
-            return DTO.Player(*cur.fetchall()[0])
+            try:
+                return DTO.Player(*cur.fetchall()[0])
+            except IndexError:
+                return None
         else:
             name = input("Username: ")
             password = input("Password: ")
             cur.execute("""
                 SELECT * FROM All_Players WHERE (username, password) = (?, ?)
             """, (name, password))
-            return DTO.Player(*cur.fetchall()[0])
+            try:
+                print(*cur.fetchall()[0])
+                return DTO.Player(*cur.fetchall()[0])
+            except IndexError:
+                print("Invalid username or password")
+                return None

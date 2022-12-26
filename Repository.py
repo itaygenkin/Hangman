@@ -65,13 +65,13 @@ class Repository:
         """
         cur = self.connection.cursor()
         cur.execute("""
-            SELECT games, wins 
+            SELECT games, wins, row 
             FROM All_Players 
             WHERE username = ?
         """, (player.username,))
         x = cur.fetchall()
         cur.close()
-        stats = np.array(*x)
+        stats = np.array(*x, dtype=np.int32)
         return stats if stats[0] > 0 else None
 
     def get_hall_of_fame(self):
@@ -86,8 +86,9 @@ class Repository:
     def get_all_time(self):
         cur = self.connection.cursor()
         cur.execute("SELECT * FROM Hall_of_Fame ORDER BY score")
+        x = cur.fetchall()
         cur.close()
-        return cur.fetchall()
+        return x
 
     def is_already_registered(self, name):
         cur = self.connection.cursor()
@@ -101,9 +102,7 @@ class Repository:
     def login(self, default=False):
         cur = self.connection.cursor()
         if default:
-            cur.execute("""
-                SELECT * FROM All_Players WHERE username = ?
-            """, ("guest",))
+            cur.execute("""SELECT * FROM All_Players WHERE username = ?""", ("guest",))
             try:
                 return DTO.Player(*cur.fetchall()[0])
             except IndexError:
@@ -111,11 +110,8 @@ class Repository:
         else:
             name = input("Username: ")
             password = input("Password: ")
-            cur.execute("""
-                SELECT * FROM All_Players WHERE (username, password) = (?, ?)
-            """, (name, password))
+            cur.execute("""SELECT * FROM All_Players WHERE (username, password) = (?, ?)""", (name, password))
             try:
-                print(*cur.fetchall()[0])
                 return DTO.Player(*cur.fetchall()[0])
             except IndexError:
                 print("Invalid username or password")

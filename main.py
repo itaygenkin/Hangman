@@ -2,7 +2,6 @@ import os
 import sys
 from matplotlib import pyplot as plt
 
-import DAO
 import Repository
 import DTO
 from DAO import Players, Games
@@ -25,10 +24,12 @@ def enter_page():
         # register
         case '1':
             player = register()
+            if player is None:
+                enter_page()
         # login
         case '2':
             player = connection.login()
-            while player is None:
+            if player is None:
                 enter_page()
         # guest login
         case '3':
@@ -90,10 +91,12 @@ def main():
                 if y is None:
                     print("No games were played\n")
                 else:
-                    wins = (y[1] / y[0]) * 100
-                    failures = (((y[0] - y[1]) / y[0]) * 100).round(2)
-                    my_lables = [f"Wins {wins}%", f"Failures {failures}%"]
-                    plt.pie(y, labels=my_lables, shadow=True)
+                    # wins = (y[1] / y[0]) * 100
+                    # failures = (((y[0] - y[1]) / y[0]) * 100).round(2)
+                    # my_lables = [f"Wins {wins}%", f"Failures {failures}%"]
+                    # plt.pie(y, labels=my_lables, shadow=True)
+                    plt.bar(['Wins', 'Failures', 'Wins in a row'], [y[1], y[0] - y[1], y[2]])
+                    plt.title(f'{player.username}\'s Stats')
                     plt.show()
 
             # exit
@@ -146,7 +149,9 @@ def register():
     username = input("Choose an username: ")
     while connection.is_already_registered(username):
         print("Username " + Fore.MAGENTA + username + Style.RESET_ALL + " is already exists")
-        username = input("Choose different username: ")
+        username = input("Choose different username or type \'\exit\' to return the main page: ")
+        if username == '\exit':
+            return None
     password = input("Choose a password: ")
     new_player = DTO.Player(username, password)
     All_Players.register(new_player)

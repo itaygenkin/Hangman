@@ -1,10 +1,10 @@
 class Player:
-    def __init__(self, username, password, games=0, wins=0):
+    def __init__(self, username, password, games=0, wins=0, rows=0):
         self.username = username
         self.password = password
         self.num_of_games = games
         self.num_of_wins = wins
-        self.wins_in_row = 0
+        self.wins_in_row = rows
 
 
 class Game:

@@ -36,32 +36,22 @@ class Repository:
             SET wins = wins + 1, games = games + 1, row = row + 1 
             WHERE username = ?
         """, (player.username,))
-        # cur.execute("""
-        #     UPDATE All_Players
-        #     SET games = games + 1
-        #     WHERE username = ?
-        # """, (player.username,))
         cur.close()
 
     def lose_game(self, player):
         cur = self.connection.cursor()
         cur.execute("""
             UPDATE All_Players 
-            SET games = games + 1, row = row + 1 
+            SET games = games + 1, row = 0 
             WHERE username = ?
         """, (player.username,))
-        # cur.execute("""
-        #     UPDATE All_Players
-        #     SET row = row + 1
-        #     WHERE username = ?
-        # """, (player.username,))
         cur.close()
 
     def get_stats(self, player):
         """
         select the number of games and wins of the current player
         :param player: the player which is currently playing
-        :return: array (np) of player's games and wins
+        :return: array (np array) of player's games, wins and wins in a row respectively
         """
         cur = self.connection.cursor()
         cur.execute("""
@@ -86,7 +76,7 @@ class Repository:
     def get_all_time(self):
         cur = self.connection.cursor()
         cur.execute("SELECT * FROM Hall_of_Fame ORDER BY score")
-        x = cur.fetchall()
+        x = cur.fetchall().reverse()
         cur.close()
         return x
 

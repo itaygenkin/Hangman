@@ -95,7 +95,8 @@ def main():
                     # failures = (((y[0] - y[1]) / y[0]) * 100).round(2)
                     # my_lables = [f"Wins {wins}%", f"Failures {failures}%"]
                     # plt.pie(y, labels=my_lables, shadow=True)
-                    plt.bar(['Wins', 'Failures', 'Wins in a row'], [y[1], y[0] - y[1], y[2]])
+                    plt.figure(figsize=(5, 4))
+                    plt.bar(['Games', 'Wins', 'Failures', 'Wins in a row'], [y[0], y[1], y[0] - y[1], y[2]], width=0.25)
                     plt.title(f'{player.username}\'s Stats')
                     plt.show()
 
